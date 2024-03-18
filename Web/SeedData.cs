@@ -23,6 +23,17 @@ public static class SeedData
 
             Quiz matematyka = new Quiz(1,new List<QuizItem>(){m1,m2,m3,m4},"Matematyka");
             Quiz geografia = new Quiz(2, new List<QuizItem>() { g1, g2, g3}, "Geografia");
+
+            quizItemRepo.Add(m1);
+            quizItemRepo.Add(m2);
+            quizItemRepo.Add(m3);
+            quizItemRepo.Add(m4);
+            quizItemRepo.Add(g1);
+            quizItemRepo.Add(g2);
+            quizItemRepo.Add(g3);
+
+            quizRepo.Add(matematyka);
+            quizRepo.Add(geografia);
         }
     }
 }
