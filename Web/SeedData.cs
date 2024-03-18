@@ -21,6 +21,8 @@ public static class SeedData
             QuizItem g2 = new QuizItem(2, "Gdzie leży Wietnam?", new List<string> { "Europa", "Ameryka Płd", "Afryka", "Ameryka Płn", "Australia" }, "Azja");
             QuizItem g3 = new QuizItem(3, "Gdzie leży Libia?", new List<string> { "Ameryka Płn", "Europa", "Australia", "Azja", "Ameryka Płd" }, "Afryka");
 
+            Quiz matematyka = new Quiz(1,new List<QuizItem>(){m1,m2,m3,m4},"Matematyka");
+            Quiz geografia = new Quiz(2, new List<QuizItem>() { g1, g2, g3}, "Geografia");
         }
     }
 }
