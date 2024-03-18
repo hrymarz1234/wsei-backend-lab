@@ -1,8 +1,28 @@
-﻿@page "{quizId}/{itemId}"
-@model BackendLab01.Pages.Summary
+﻿@page "{quizId}/{correctAnswers}"
+@model BackendLab01.Summary
 @{
-    ViewData["Title"] = "summary";
+    ViewData["Title"] = "Summary";
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
 <H3>@ViewData["Title"]</H3>
+
+<p>@Model.CorrectAnswers of @Model.Quiz.Items.Count</p>
+
+<div>
+    @foreach (var item in Model.Quiz.Items)
+    {
+        <p>@item.Question</p>
+        <div class="form-check">
+            <p class="text-success">@item.CorrectAnswer</p>
+            <p class="text-danger">
+                @foreach (var answer in item.IncorrectAnswers)
+                {
+                    @answer
+                    <br />
+                }
+            </p>
+        </div>
+
+    }
+</div>
