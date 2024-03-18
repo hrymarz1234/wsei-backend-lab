@@ -1,5 +1,7 @@
 ﻿@page "/chatroom"
 @inject NavigationManager navigationManager
+@inject IUserService _userervice
+@using BlazorApp.UserServic;
 @using BlazorChat;
 @using Microsoft.AspNetCore.SignalR.Client;
 
@@ -49,6 +51,16 @@ else
         <hr />
         <textarea class="input-lg" placeholder="enter your comment" @bind="@_newMessage"></textarea>
         <button class="btn btn-default" @onclick="@(() => SendAsync(_newMessage))">Send</button>
+        <select class="form-select" @bind="@_to">
+            <option value="All">All</option>
+            @foreach (var user in _userervice.GetAll())
+            {
+                @if (@* _hubConnection.ConnectionId != user.ConnectionId && *@ _username != user.Username)
+                {
+                    <option value="@user.Username">@user.Username</option>
+                }
+            }
+        </select>
     </div>
 }
 
@@ -58,6 +70,8 @@ else
 
     // name of the user who will be chatting
     private string _username;
+
+    private string _to;
 
     // on-screen message
     private string _message;
@@ -99,10 +113,11 @@ else
                 .Build();
 
             _hubConnection.On<string, string>("Broadcast", BroadcastMessage);
-
+            _hubConnection.On<string, string>("Private", PrivateMessage);
             await _hubConnection.StartAsync();
 
             await SendAsync($"[Notice] {_username} joined chat room.");
+            _userervice.Add(_hubConnection.ConnectionId, _username);
         }
         catch (Exception e)
         {
@@ -132,17 +147,25 @@ else
 
             _hubConnection = null;
             _isChatting = false;
+            _userervice.RemoveByName(_username);
         }
     }
 
     private async Task SendAsync(string message)
     {
-        if (_isChatting && !string.IsNullOrWhiteSpace(message))
+        if (_to == "All")
         {
-            await _hubConnection.SendAsync("Broadcast", _username, message);
-
-            _newMessage = string.Empty;
+            if (_isChatting && !string.IsNullOrWhiteSpace(message))
+            {
+                await _hubConnection.SendAsync("Broadcast", _username, message);
+            }
         }
+        else
+        {
+            var connectionId = _userervice.GetConnectioIdByName(_to);
+            _hubConnection.SendAsync("Private", _username, connectionId, message);
+        }
+        _newMessage = string.Empty;
     }
 
     private class Message
@@ -161,5 +184,10 @@ else
         public bool IsNotice => Body.StartsWith("[Notice]");
 
         public string CSS => Mine ? "sent" : "received";
+    }
+    private void PrivateMessage(string name, string message)
+    {
+        _messages.Add(new Message(name, $"[Private]: {message}", false));
+        InvokeAsync(StateHasChanged);
     }
 }
