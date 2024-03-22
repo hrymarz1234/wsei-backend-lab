@@ -1,4 +1,4 @@
-﻿namespace BlazorApp.UserServic;
+﻿namespace BlazorApp.UserServices;
 
 public interface IUserService
 {

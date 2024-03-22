@@ -1,9 +1,9 @@
 ﻿@page "/chatroom"
 @inject NavigationManager navigationManager
 @inject IUserService _userervice
-@using BlazorApp.UserServic;
-@using BlazorChat;
+@using BlazorApp.UserServices;
 @using Microsoft.AspNetCore.SignalR.Client;
+
 
 <h1>Blazor SignalR Chat Sample</h1>
 <hr />
@@ -55,13 +55,14 @@ else
             <option value="All">All</option>
             @foreach (var user in _userervice.GetAll())
             {
-                @if (@* _hubConnection.ConnectionId != user.ConnectionId && *@ _username != user.Username)
+                @if (_username != user.Username)
                 {
                     <option value="@user.Username">@user.Username</option>
                 }
             }
         </select>
     </div>
+
 }
 
 @code {
@@ -71,7 +72,7 @@ else
     // name of the user who will be chatting
     private string _username;
 
-    private string _to;
+    private string? _to;
 
     // on-screen message
     private string _message;
@@ -96,7 +97,7 @@ else
 
         try
         {
-            // Start chatting and force refresh UI, ref: https://github.com/dotnet/aspnetcore/issues/22159
+            // Start chatting and force refresh UI.
             _isChatting = true;
             await Task.Delay(1);
 
@@ -106,7 +107,7 @@ else
             // Create the chat client
             string baseUrl = navigationManager.BaseUri;
 
-            _hubUrl = baseUrl.TrimEnd('/') + BlazorChatSampleHub.HubUrl;
+            _hubUrl = baseUrl.TrimEnd('/') + BlazorChat.BlazorChatSampleHub.HubUrl;
 
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(_hubUrl)
@@ -133,7 +134,7 @@ else
         _messages.Add(new Message(name, message, isMine));
 
         // Inform blazor the UI needs updating
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task DisconnectAsync()
@@ -153,41 +154,44 @@ else
 
     private async Task SendAsync(string message)
     {
-        if (_to == "All")
+        if (_isChatting && !string.IsNullOrWhiteSpace(message))
         {
-            if (_isChatting && !string.IsNullOrWhiteSpace(message))
+            var connectionId = _userervice.GetConnectioIdByName(_to);
+
+            if (connectionId == null)
             {
                 await _hubConnection.SendAsync("Broadcast", _username, message);
             }
+            else
+            {
+                await _hubConnection.SendAsync("Private", _username, connectionId, message);
+            }
+
+            _newMessage = string.Empty;
         }
-        else
+    }
+
+        private class Message
         {
-            var connectionId = _userervice.GetConnectioIdByName(_to);
-            _hubConnection.SendAsync("Private", _username, connectionId, message);
-        }
-        _newMessage = string.Empty;
-    }
+            public Message(string username, string body, bool mine)
+            {
+                Username = username;
+                Body = body;
+                Mine = mine;
+            }
 
-    private class Message
-    {
-        public Message(string username, string body, bool mine)
+            public string Username { get; set; }
+            public string Body { get; set; }
+            public bool Mine { get; set; }
+
+            public bool IsNotice => Body.StartsWith("[Notice]");
+
+            public string CSS => Mine ? "sent" : "received";
+        }
+
+        private void PrivateMessage(string name, string message)
         {
-            Username = username;
-            Body = body;
-            Mine = mine;
+            _messages.Add(new Message(name, $"[Private]: {message}", false));
+            InvokeAsync(StateHasChanged);
         }
-
-        public string Username { get; set; }
-        public string Body { get; set; }
-        public bool Mine { get; set; }
-
-        public bool IsNotice => Body.StartsWith("[Notice]");
-
-        public string CSS => Mine ? "sent" : "received";
-    }
-    private void PrivateMessage(string name, string message)
-    {
-        _messages.Add(new Message(name, $"[Private]: {message}", false));
-        InvokeAsync(StateHasChanged);
-    }
 }

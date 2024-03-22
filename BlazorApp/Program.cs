@@ -1,5 +1,5 @@
 using BlazorApp.Data;
-using BlazorApp.UserServic;
+using BlazorApp.UserServices;
 using BlazorChat;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
