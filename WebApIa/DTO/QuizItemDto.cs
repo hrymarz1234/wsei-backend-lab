@@ -12,8 +12,13 @@ namespace WebApIa.DTO
             QuizItemDto qidto = new QuizItemDto();
             qidto.Id = quiz.Id;
             qidto.Question = quiz.Question;
-            qidto.Options.Add(quiz.CorrectAnswer);
-            qidto.Options.AddRange(quiz.IncorrectAnswers);
+            List<string> answers = new List<string>();
+            answers.Add(quiz.CorrectAnswer);
+            answers.AddRange(quiz.IncorrectAnswers);
+            
+            Random rnd = new Random();
+            answers = answers.OrderBy(x => rnd.Next()).ToList();
+
             return qidto;
 
             

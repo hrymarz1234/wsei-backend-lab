@@ -12,7 +12,11 @@ namespace WebApIa.DTO
             QuizDto dto = new QuizDto();
             dto.Id = quiz.Id;
             dto.Title = quiz.Title;
-            
+            foreach (var quizItem in quiz.Items)
+            {
+                dto.Items.Add(QuizItemDto.of(quizItem));
+            }
+            return dto;
 
         }
     }
