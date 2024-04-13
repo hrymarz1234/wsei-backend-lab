@@ -52,7 +52,21 @@ namespace WebApIa.Controllers
             string answer = dto.Answer;
             _service.SaveUserAnswerForQuiz(quizId, userId, quizItemId, answer);
         }
+        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.Route("{quizId}/user/{userId}/correct-answers-count")]
+        public ActionResult<QuizUserAnswersDto> GetCorrectAnswersCount(int quizId, int userId)
+        { 
+            int correctAnswersCount = _service.CountCorrectAnswersForQuizFilledByUser(quizId, userId);
 
+            QuizUserAnswersDto userAnswersDto = new QuizUserAnswersDto
+            {
+                QuizId = quizId,
+                UserId = userId,
+                CorrectAnswersCount = correctAnswersCount
+            };
+
+            return userAnswersDto;
+        }
 
     }
 }
